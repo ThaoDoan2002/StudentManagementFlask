@@ -146,7 +146,7 @@ def get_my_class_of_user(user_id):
         .join(MyClassDetail, MyClassDetail.id == MyClass.my_class_detail_id) \
         .join(Teaching, Teaching.my_class_id == MyClass.id) \
         .join(SchoolYear, SchoolYear.id == MyClass.school_year_id) \
-        .filter(Teaching.user_id == user_id) \
+        .filter(Teaching.user_id == user_id, MyClass.school_year_id == app.config["YEAR"]) \
         .first()
     return m_class
 
