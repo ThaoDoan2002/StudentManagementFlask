@@ -1,0 +1,39 @@
+{% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
+{% block content %}
+
+<div class="main student_detail">
+    <div class="table-responsive m-5">
+        <table class="table table-bordered mt-3 bg-light n-table">
+            <thead>
+            <tr>
+                <th colspan="2" class="text-center">HỒ SƠ HỌC SINH</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Họ tên: {{ student.first_name }} {{ student.last_name }}</td>
+                <td>Giới tính:{% if student.sex.value == 1 %} Nữ {% endif %} {% if student.sex.value == 2 %} Nam {%
+                    endif %} {% if student.sex.value == 3 %} Khác {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>Ngày sinh: {{ student.dob }}</td>
+                <td>Địa chỉ: {{ student.address }}</td>
+            </tr>
+            <tr>
+                <td>Số điện thoại: {{ student.phone }}</td>
+                <td>Email: {{ student.email }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='js/students.js') }}"></script>
+{% endblock %}

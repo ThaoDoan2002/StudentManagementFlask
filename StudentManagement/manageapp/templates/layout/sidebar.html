@@ -1,0 +1,84 @@
+<aside id="sidebar">
+    <div class="d-flex slogan">
+        <button class="toggle-btn" type="button">
+            <i class="lni lni-grid-alt"></i>
+        </button>
+        <div class="sidebar-logo">
+            <a href="/">EduTrack</a>
+        </div>
+    </div>
+    <ul class="sidebar-nav">
+        {% if current_user.is_authenticated %}
+        <li class="sidebar-item  mb-3">
+            <a href="" class="sidebar-link text-dark">
+                <i class="lni lni-user"></i>
+                <span>{{current_user.username}}</span>
+            </a>
+        </li>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.user_role == roles.EMPLOYEE %}
+        <li class="sidebar-item mb-1">
+            <a href="/students/add_student" class="sidebar-link">
+                <i class="fa-solid fa-plus"></i>
+                <span>Tiếp nhận học sinh</span>
+            </a>
+        </li>
+        <li class="sidebar-item mb-1">
+            <a href="/students/new_students" class="sidebar-link">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Học sinh mới</span>
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="/classes" class="sidebar-link">
+                <i class="fa-solid fa-timeline"></i>
+                <span>Danh sách lớp</span>
+            </a>
+        </li>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.user_role == roles.TEACHER %}
+        <li class="sidebar-item">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+               data-bs-target="#input" aria-expanded="false" aria-controls="auth">
+                <i class="lni lni-protection"></i>
+                <span>Nhập điểm</span>
+            </a>
+            <ul id="input" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                {% for s in subjects %}
+                <li class="sidebar-item">
+                    <a href="/scores/{{ s.id }}" class="sidebar-link">{{ s.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+         <li class="sidebar-item">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+               data-bs-target="#getScore" aria-expanded="false" aria-controls="auth">
+                <i class="fa-regular fa-star"></i>
+                <span>Xem điểm</span>
+            </a>
+            <ul id="getScore" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                {% for s in subjects %}
+                <li class="sidebar-item">
+                    <a href="/get_scores/{{ s.id }}" class="sidebar-link">{{ s.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li class="sidebar-item">
+            <a href="/average_scores" class="sidebar-link">
+               <i class="fa-regular fa-moon"></i>
+                <span>Xem điểm tổng kết</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+    {% if current_user.is_authenticated %}
+    <div class="sidebar-footer">
+        <a href="/logout" class="sidebar-link text-dark">
+            <i class="lni lni-exit"></i>
+            <span>Đăng xuất</span>
+        </a>
+    </div>
+    {% endif %}
+</aside>

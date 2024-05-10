@@ -1,0 +1,88 @@
+{% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
+{% block content %}
+
+<div class="main scores">
+    <div class=" container mx-5 p-5">
+        <h1 class="text-center">TRA CỨU DANH SÁCH LỚP</h1>
+        <form action="/classes" method="get">
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label for="m-class" class="form-label">Chon lớp</label>
+                    <select id="m-class" class="form-select" name="m_class">
+                        {% for c in classes %}
+                        <option value="{{ c.id }}" {% if request.args.m_class== c.id|string %} selected {% endif %}>{{
+                            c.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 mb-3">
+                    <label for="year" class="form-label">Chon năm</label>
+                    <select id="year" class="form-select" name="year">
+                        {% for y in years %}
+                        <option value="{{ y.id }}" {% if request.args.year== y.id|string %} selected {% endif %}>{{
+                            y.year }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-dark my-2 text-center px-5 py-2"><i
+                        class="fa-solid fa-magnifying-glass"></i></button>
+            </div>
+        </form>
+        {% if students|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-bordered mt-3 bg-light n-table">
+                <thead>
+                <tr>
+                    <th class="text-center" colspan="{% if request.args.year == '3' %} 6 {% else %} 5 {% endif %}">DANH
+                        SÁCH LỚP
+                    </th>
+                </tr>
+                <tr>
+                    <th colspan="{% if request.args.year == '3' %} 4 {% else %} 2 {% endif %}">Lớp: {{ class_detail.name
+                        }}
+                    </th>
+                    <th colspan="{% if request.args.year == '3' %} 3 {% else %} 3 {% endif %}">Sĩ số: {{ students|length
+                        }}
+                    </th>
+                </tr>
+                <tr class="text-center">
+                    <th scope="col">STT</th>
+                    <th scope="col">Họ tên</th>
+                    <th scope="col">Giới tính</th>
+                    <th scope="col">Năm sinh</th>
+                    <th scope="col">Địa chỉ</th>
+                    {% if request.args.year == '3' %}
+                    <th scope="col"></th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for i in range(students|length) %}
+                <tr>
+                    <td class="text-center">{{ i + 1 }}</td>
+                    <td>{{ students[i].first_name }} {{ students[i].last_name }}</td>
+                    <td>{{ students[i].sex.name }}</td>
+                    <td>{{ students[i].dob }}</td>
+                    <td>{{ students[i].address }}</td>
+                    {% if request.args.year == '3' %}
+                    <td class="text-center">
+                        <a href="/students/change_class/{{ students[i].id }}/{{ class_detail.id }}"
+                           class="btn btn-warning mb-1 mx-1"><i
+                                class="fa-solid fa-pen-to-square"></i></a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

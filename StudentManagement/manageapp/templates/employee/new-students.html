@@ -1,0 +1,53 @@
+{% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
+{% block content %}
+
+<div class="main new_students">
+    <div class="main container mx-5 p-5">
+    <h1 class="text-center">DANH SÁCH HỌC SINH NHẬP HỌC</h1>
+    {% if err_msg != '' %}
+    <div class="alert alert-danger">{{ err_msg }}</div>
+    {% else %}
+    <a class="btn btn-dark" href="/arrange_class">Xếp lớp</a>
+    {% if err_msg1 %}
+    <div class="alert alert-danger">{{ err_msg1 }}</div>
+    {% endif %}
+    <div class="table-responsive">
+        <table class="table table-bordered mt-3 bg-light n-table">
+            <thead>
+            <tr class="text-center">
+                <th>STT</th>
+                <th scope="col">Họ tên</th>
+                <th scope="col">Ngày sinh</th>
+                <th scope="col">Giới tính</th>
+                <th scope="col">Địa chỉ</th>
+                <th scope="col">Số điện thoại</th>
+                <th scope="col">Email</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for i in range(students|length) %}
+            <tr>
+                <td>{{ i + 1 }}</td>
+                <td><a href="/students/{{ students[i].id }}" style="font-style: italic;"> {{ students[i].first_name }} {{ students[i].last_name }} </a></td>
+                <td>{{ students[i].dob }}</td>
+                <td>{{ students[i].sex.name }}</td>
+                <td>{{ students[i].address }}</td>
+                <td>{{ students[i].phone }}</td>
+                <td>{{ students[i].email }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+<script src="{{ url_for('static', filename='js/students.js') }}"></script>
+{% endblock %}

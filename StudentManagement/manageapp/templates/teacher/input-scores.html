@@ -1,0 +1,104 @@
+{% extends 'layout/base.html' %}
+{% block content %}
+<div class="main score">
+    <div class=" container mx-5 p-5 input_score">
+        <a href="{{request.referrer}}" class="btn btn-dark mb-5"><i class="fa-solid fa-chevron-left"></i></a>
+
+        {% if semesters|length < 1 %}
+        <div class="alert alert-danger">Đã nhập điểm cả 2 kì cho lớp này</div>
+        {% else %}
+
+        <form action="/scores/{{ subject.id }}" method="post" id="form_scores">
+            {% if type_15m is none and type_1h is none %}
+            <div class="mb-5 row">
+                {% for t in score_types|sort(attribute='id') %}
+                {% if t.id != 3 %}
+                <div class="col-md-6 col-12">
+                    <label for="type_{{t.id}}" class="form-label">Số lượng điểm {{t.name}}:</label>
+                    <input type="number" class="form-control" id="type_{{t.id}}" name="type_{{t.id}}" required
+                           value="1" placeholder="Nhập số lượng điểm {{t.name}}" onchange="changeColumn()"
+                           style="width:200px">
+                    <!--            rules=>     min="1" max="5" pattern="^(10|[1-5])$" -->
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-8 col-12">
+                    <h1>Lớp: {{ m_class.name }}</h1>
+                </div>
+                <div class="col-md-4 col-12">
+                    <h1>Môn: {{ subject.name }}</h1>
+                </div>
+                <div class="col-md-8 col-12">
+                    <label for="se" class="form-label">Chọn học kì</label>
+                    <select id="se" class="form-select" name="semester" style="width:200px">
+                        {% for s in semesters|sort(attribute='value') %}
+                        <option value="{{ s.value }}" {% if request.form.semester== s.value|string %} selected
+                                {% endif %}>{{ s.name.split("S")[-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 col-12"><h1>Năm học: {{ m_class.year }}</h1></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered mt-3 bg-light n-table">
+                    <thead>
+                    <tr class="text-center">
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        {% for t in score_types|sort(attribute='id') %}
+                        <th style="width:200px">Điểm {{ t.name }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for i in range(students|length) %}
+                    <tr class="text-center">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ students[i].first_name }} {{ students[i].last_name }}</td>
+                        {% for t in score_types|sort(attribute='id') %}
+                        <td>
+                            <div class="td_{{t.id}} mx-5" data-student-id="{{ students[i].id }}">
+                                {% if t.id == 1 and type_15m%}
+                                {% for j in range(0,type_15m.number_score) %}
+                                <input type="number" class="form-control" required pattern="^(10|[0-9])$" min="0"
+                                       max="10"
+                                       name="score_{{t.id}}_{{students[i].id}}_{{j}}" style="width:150px">
+                                {% endfor %}
+                                {% endif %}
+                                {% if t.id == 2 and type_1h %}
+                                {% for k in range(0,type_1h.number_score) %}
+                                <input type="number" class="form-control" required pattern="^(10|[0-9])$" min="0"
+                                       max="10"
+                                       name="score_{{t.id}}_{{students[i].id}}_{{k}}" style="width:150px">
+                                {% endfor %}
+                                {% endif %}
+                                {% if type_1h is none and type_15m is none or t.id == 3 %}
+                                <input type="number" class="form-control" required pattern="^(10|[0-9])$" min="0"
+                                       max="10"
+                                       name="score_{{t.id}}_{{students[i].id}}" style="width:150px">
+                                {% endif %}
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-dark my-2 text-center px-5 py-2"> Xác nhận</button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% block js %}
+<script src="{{ url_for('static', filename='js/scores.js') }}"></script>
+{% endblock %}
+{% endblock %}

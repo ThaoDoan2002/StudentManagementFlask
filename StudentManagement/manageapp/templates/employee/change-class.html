@@ -1,0 +1,34 @@
+{% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
+{% block content %}
+<div class="main container mt-5">
+    <a href="{{request.referrer}}" class="btn btn-dark"><i class="fa-solid fa-chevron-left"></i></a>
+    <h3 class="text-center">CHUYỂN LỚP CHO HỌC SINH</h3>
+
+    <h5 class="text-danger">HỌ TÊN: {{ student.first_name }} {{ student.last_name }}</h5>
+        <form class="shadow p-3 mt-4 form-w bg-light" action="" method="post">
+            {% if err_msg %}
+            <div class="alert alert-danger">{{ err_msg }}</div>
+            {% endif %}
+            <div class="mb-3">
+                <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Lớp hiện tại</label>
+                        <input type="text" class="form-control" name="o-class"
+                               value="{{ name_class_now }}" disabled>
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="class" class="form-label">Chuyển Lớp</label>
+                        <select id="class" class="form-select" name="n-class">
+                            <option value="0">Chọn Lớp</option>
+                            {% for c in classrooms %}
+                            <option value="{{ c.id }}">{{c.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-dark">Cập nhật</button>
+        </form>
+</div>
+{% endblock %}

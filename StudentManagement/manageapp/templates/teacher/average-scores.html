@@ -1,0 +1,55 @@
+{% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
+{% block content %}
+
+<div class="main average_scores">
+    <div class="container mx-5 p-5 average_scores">
+        <h1 class="text-center">BẢNG ĐIỂM TRUNG BÌNH THEO NĂM</h1>
+        <form action="/average_scores" method="get">
+            <div class="mb-3">
+                <label for="year" class="form-label">Năm</label>
+                <select id="year" class="form-select" name="year">
+                    <option value="">Chọn năm</option>
+                    {% for y in years %}
+                    <option value="{{ y.id }}" {% if request.args.year== y.id|string %} selected {% endif %}>{{ y.year
+                        }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-dark my-2 text-center px-5 py-2">OK</button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-bordered mt-3 bg-light n-table">
+                <thead>
+                <tr class="text-center">
+                    <th>STT</th>
+                    <th scope="col" rowspan="2">Họ và tên</th>
+                    <th scope="col">Lớp</th>
+                    <th scope="col">Điểm TB HK1</th>
+                    <th scope="col">Điểm TB HK2</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for i in range(averages|length) %}
+                <tr class="text-center">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ averages[i][1] }} {{ averages[i][2] }}</td>
+                    <td>{{ averages[i][3] }}</td>
+                    <td>{{ averages[i][4] | float | round(2) }}</td>
+                    <td>{{ averages[i][5] | float | round(2) }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+</div>
+
+
+{% endblock %}

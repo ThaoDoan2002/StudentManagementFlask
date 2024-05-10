@@ -1,0 +1,66 @@
+{% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
+{% block content %}
+
+<div class="main scores">
+    <div class=" container mx-5 p-5">
+        <h1 class="text-center">BẢNG ĐIỂM MÔN HỌC</h1>
+        {% if err_msg2 %}
+        <div class="alert alert-danger mt-3">{{ err_msg2 }} nhấn vào <a href="/scores/{{ subject.id }}">đây</a> để nhập</div>
+        {% else %}
+        <div class="row">
+            <div class="col-md-8 col-12"><h4>Lớp: {{ m_class.name }}</h4></div>
+            <div class="col-md-4 col-12"><h4>Môn: {{ subject.name }}</h4></div>
+            <div class="col-md-8 col-12">
+                <form>
+                    <label for="se" class="form-label">Chọn học kì</label>
+                    <select id="se" class="form-select" name="se_value" style="width:200px">
+                        {% for s in semesters|sort(attribute='value') %}
+                        <option value="{{ s.value }}" {% if request.args.se_value== s.value|string %} selected
+                                {% endif %}>{{ s.name.split("S")[-1] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-dark mt-2">OK</button>
+                </form>
+            </div>
+            <div class="col-md-4 col-12"><h4>Năm học: {{ m_class.year }}</h4></div>
+        </div>
+        {% if err_msg %}
+        <div class="alert alert-danger mt-3">{{ err_msg }}</div>
+        {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered mt-3 bg-light n-table">
+                <thead>
+                <tr class="text-center">
+                    <th>STT</th>
+                    <th scope="col" rowspan="2">Họ và tên</th>
+                    <th scope="col" colspan="{{type_15m}}" rowspan="1">Điểm 15'</th>
+                    <th scope="col" colspan="{{type_1h}}" rowspan="1">Điểm 1 tiết</th>
+                    <th scope="col" rowspan="1">Điểm cuối kì</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {% for i in range(student_scores|length) %}
+                <tr class="text-center">
+                    <td>{{ i + 1 }}</td>
+                    <td>{{ student_scores[i][0] }} {{ student_scores[i][1] }}</td>
+                    {% for s in student_scores[i][2].split(',') %}
+                    <td>{{ s }}</td>
+                    {% endfor %}
+                    {% for s in student_scores[i][3].split(',') %}
+                    <td>{{ s }}</td>
+                    {% endfor %}
+                    <td>{{ student_scores[i][4] }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
