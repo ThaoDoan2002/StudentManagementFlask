@@ -1,11 +1,11 @@
 from datetime import datetime
-
-from flask import render_template, request, redirect,  url_for
+from StudentManagement.manageapp import admin
+from flask import render_template, request, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-
-from manageapp import app, login, dao, db
-from manageapp.decorators import loggedin
-from manageapp.models import UserRole, Sex, Student, Studying, Semester, SchoolYear, MyClass, Score, Outline, Rule
+from StudentManagement.manageapp import app, login, dao, db
+from StudentManagement.manageapp.decorators import loggedin
+from StudentManagement.manageapp.models import UserRole, Sex, Student, Studying, Semester, SchoolYear, MyClass, Score, \
+    Outline, Rule
 
 
 @app.context_processor
@@ -24,7 +24,7 @@ def roles_context_processor():
 @app.route('/')
 @login_required
 def index():
-    r = dao.get_rule_by_name('MaxAge')
+    r = 20
     print(r)
     return render_template('index.html')
 
@@ -52,6 +52,25 @@ def loginUser():
     return render_template('login.html', err_msg=err_msg)
 
 
+@app.route('/login-admin', methods=['get', 'post'])
+def admin_login():
+    err_msg = ''
+    if request.method.__eq__('POST'):
+        username = request.form.get('username')
+        password = request.form.get('password')
+        u = dao.auth_admin(username=username, password=password)
+        if u:
+            login_user(user=u)
+            return redirect('/admin')
+        else:
+            err_msg = 'Tên đăng nhập hoặc mật khẩu hoặc quyền truy cập sai!'
+    return render_template('admin/index.html',err_msg=err_msg)
+
+
+
+
+
+
 @app.route('/logout', methods=['get'])
 @login_required
 def logout():
@@ -66,8 +85,8 @@ def add_student():
     err_msg1 = ''
     err_msg2 = ''
     err_msg3 = ''
-    min_age = dao.get_rule_by_name('MinAge').value
-    max_age = dao.get_rule_by_name('MaxAge').value
+    min_age = dao.get_value_by_name('minAge')
+    max_age = dao.get_value_by_name('maxAge')
     f1 = True
     f2 = True
     f3 = True
@@ -117,7 +136,7 @@ def student_detail(id):
 # yc2.1
 @app.route('/arrange_class', methods=['GET'])
 def arrange_class():
-    number_max = dao.get_rule_by_name('MaxNumber').value # rule
+    number_max = dao.get_value_by_name('maxNumber')  # rule
 
     new_students = dao.load_new_student()
     classes = dao.load_classes_g10()
@@ -173,7 +192,7 @@ def change_class(st_id, cl_dt_id):
     name_class_now = dao.get_class_detail_by_id(cl_dt_id).name
     my_class = dao.get_my_class_by_dt_cl(cl_dt_id)
 
-    max_number = dao.get_rule_by_name('MaxNumber').value
+    max_number = dao.get_value_by_name('maxNumber')
 
     err_msg = ''
     classrooms = dao.load_class_for_update(cl_dt_id, max_number,
@@ -261,7 +280,8 @@ def scores_of_class_by_subject(sj_id):
     print(type_15m)
     print(type_1h)
     return render_template('teacher/scores.html', student_scores=student_scores, subject=subject,
-                           m_class=m_class, type_15m=type_15m, type_1h=type_1h, semesters=Semester, err_msg=err_msg, err_msg2 = err_msg2)
+                           m_class=m_class, type_15m=type_15m, type_1h=type_1h, semesters=Semester, err_msg=err_msg,
+                           err_msg2=err_msg2)
 
 
 @app.route('/average_scores')
@@ -272,6 +292,14 @@ def average_scores():
 
     averages = dao.get_semester_avg(year)
     return render_template('teacher/average-scores.html', averages=averages, years=years)
+
+
+@app.route('/api/load-subjects', methods=['GET'])
+def load_subjects_api():
+    grade_id = request.args.get('grade_id')
+    subjects = dao.load_subject_by_grade(grade_id)
+    subjects_dict = [{'id': subject.id, 'name': subject.name} for subject in subjects]
+    return jsonify(subjects_dict)
 
 
 if __name__ == "__main__":

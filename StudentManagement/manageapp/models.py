@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Enum, ForeignKey, UniqueConstraint, Float, DATE
-from manageapp import db, app
+from StudentManagement.manageapp import db, app
 from flask_login import UserMixin
 from enum import Enum as MyEnum
 from sqlalchemy.orm import relationship
@@ -138,15 +138,17 @@ class Outline(db.Model):
     )
 
 
+
+class Rule(db.Model):
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    name = Column(String(50), nullable=False)
+
 class RuleDetail(db.Model):
     id = Column(Integer, autoincrement=True, primary_key=True)
     name = Column(String(50), nullable=False)
     value = Column(Integer, nullable=False)
+    rule_id=Column(Integer,ForeignKey(Rule.id),nullable=False)
 
-
-class Rule(db.Model):
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    rule_detail_id = Column(Integer, ForeignKey(RuleDetail.id), nullable=False)
 
 
 # class Teacher(db.Model):
@@ -251,14 +253,14 @@ if __name__ == '__main__':
         # db.session.add(student)
         # db.session.commit()
         #
-        # import hashlib
-        #
+        import hashlib
+
         # u = User(first_name='Taylor',
         #           last_name='Swift',
         #           username='employee1',
         #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
         #           user_role = UserRole.EMPLOYEE)
-
+        #
         # u1 = User(first_name='Hong',
         #          last_name='Hae In',
         #          username='teacher1',
@@ -275,9 +277,13 @@ if __name__ == '__main__':
         #           username='teacher3',
         #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
         #           user_role=UserRole.TEACHER)
+        # u4 = User(first_name='Nguyen',
+        #           last_name='Ngan',
+        #           username='nn83',
+        #           password=str(hashlib.md5('123'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.ADMIN)
         #
-        # db.session.add_all([u1,u2,u3])
-        # db.session.add(u)
+        # db.session.add_all([u4])
         # db.session.commit()
         # mclass = MyClass.query.get(1)
         # print(mclass.my_class_detail.name)
