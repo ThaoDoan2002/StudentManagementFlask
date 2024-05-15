@@ -154,15 +154,17 @@ def arrange_class():
 @app.route('/classes')
 def info_classes():
     classes = dao.load_classes_detail()
-    years = dao.load_years()
     m_class_detail_id = request.args.get('m_class')
-    year_id = request.args.get('year')
+    name = request.args.get('name')
+
 
     class_detail = dao.get_class_detail_by_id(m_class_detail_id)
 
-    students = dao.load_students(m_class_detail_id, year_id)
 
-    return render_template('employee/class.html', classes=classes, years=years, students=students,
+
+    students = dao.load_students(m_class_detail_id, name)
+
+    return render_template('employee/class.html', classes=classes, students=students,
                            class_detail=class_detail)
 
 
@@ -170,6 +172,7 @@ def info_classes():
 @app.route('/students/change_class/<int:st_id>/<int:cl_dt_id>', methods=['get', 'post'])
 def change_class(st_id, cl_dt_id):
     student = Student.query.get(st_id)
+
     name_class_now = dao.get_class_detail_by_id(cl_dt_id).name
     my_class = dao.get_my_class_by_dt_cl(cl_dt_id)
 
@@ -267,11 +270,13 @@ def scores_of_class_by_subject(sj_id):
 @app.route('/average_scores')
 def average_scores():
     years = SchoolYear.query.all()
-
+    err_msg = ''
     year = request.args.get('year')
+    if year is None:
+        err_msg = 'Hãy chọn năm học!'
 
     averages = dao.get_semester_avg(year)
-    return render_template('teacher/average-scores.html', averages=averages, years=years)
+    return render_template('teacher/average-scores.html', averages=averages, years=years, err_msg=err_msg)
 
 
 if __name__ == "__main__":

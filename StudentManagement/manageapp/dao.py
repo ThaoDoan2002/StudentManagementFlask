@@ -89,13 +89,21 @@ def load_years():
     return years
 
 
-def load_students(m_class_detail_id, year_id):
-    students = db.session.query(Student.id, Student.first_name, Student.last_name, Student.sex, Student.dob,
-                                Student.address) \
+def load_students(m_class_detail_id=None, name=None):
+    query = db.session.query(Student.id, Student.first_name, Student.last_name, Student.sex, Student.dob,
+                             Student.address) \
         .join(Studying, Studying.student_id == Student.id) \
         .join(MyClass, Studying.my_class_id == MyClass.id) \
-        .filter(MyClass.school_year_id == year_id, MyClass.my_class_detail_id == m_class_detail_id) \
-        .all()
+        .filter(MyClass.school_year_id == app.config["YEAR"])
+
+
+    if m_class_detail_id is not None:
+        query = query.filter(MyClass.my_class_detail_id == m_class_detail_id)
+    if name is not None:
+        query = query.filter((Student.first_name.contains(name)) | (Student.last_name.contains(name)))
+
+    students = query.all()
+
 
     return students
 

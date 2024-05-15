@@ -26,13 +26,13 @@
         <li class="sidebar-item mb-1">
             <a href="/students/new_students" class="sidebar-link">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>Học sinh mới</span>
+                <span>Danh sách học sinh mới</span>
             </a>
         </li>
         <li class="sidebar-item">
             <a href="/classes" class="sidebar-link">
                 <i class="fa-solid fa-timeline"></i>
-                <span>Danh sách lớp</span>
+                <span>Điều chỉnh lớp</span>
             </a>
         </li>
         {% endif %}
@@ -55,7 +55,7 @@
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                data-bs-target="#getScore" aria-expanded="false" aria-controls="auth">
                 <i class="fa-regular fa-star"></i>
-                <span>Xem điểm</span>
+                <span>Xem điểm môn học</span>
             </a>
             <ul id="getScore" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 {% for s in subjects %}

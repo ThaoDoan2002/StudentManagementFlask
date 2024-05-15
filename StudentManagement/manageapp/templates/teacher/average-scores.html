@@ -9,7 +9,6 @@
             <div class="mb-3">
                 <label for="year" class="form-label">Năm</label>
                 <select id="year" class="form-select" name="year">
-                    <option value="">Chọn năm</option>
                     {% for y in years %}
                     <option value="{{ y.id }}" {% if request.args.year== y.id|string %} selected {% endif %}>{{ y.year
                         }}
@@ -21,7 +20,9 @@
                 <button type="submit" class="btn btn-dark my-2 text-center px-5 py-2">OK</button>
             </div>
         </form>
-
+        {% if err_msg %}
+        <div class="alert alert-info mt-3">{{ err_msg }}</div>
+        {% else %}
         <div class="table-responsive">
             <table class="table table-bordered mt-3 bg-light n-table">
                 <thead>
@@ -46,7 +47,7 @@
                 </tbody>
             </table>
         </div>
-
+        {% endif %}
 
     </div>
 </div>
