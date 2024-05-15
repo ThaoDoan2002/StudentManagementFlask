@@ -2,7 +2,7 @@ from functools import wraps
 from flask import request, redirect, url_for, abort
 from flask_login import current_user
 
-from manageapp.models import UserRole
+from StudentManagement.manageapp.models import UserRole
 
 
 def loggedin(f):
