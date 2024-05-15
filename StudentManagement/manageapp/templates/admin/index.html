@@ -1,0 +1,76 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+{% if current_user.is_authenticated %}
+<div class="main myIndex">
+    <div class="container min-vh-100 d-flex justify-content-center align-items-center">
+        <h1>
+            WELCOME TO EDUTRACK!
+        </h1>
+    </div>
+</div>
+{% else %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-admin">
+<div class="container min-vh-100 d-flex justify-content-center align-items-center">
+    <div class="myLogin p-5 rounded-2 shadow">
+        <div class="text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor"
+                 class="bi bi-person-circle mb-2"
+                 viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                <path fill-rule="evenodd"
+                      d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+            </svg>
+            <h2>Đăng nhập</h2>
+            {% if err_msg %}
+            <div class="alert alert-danger text-danger">{{ err_msg }}</div>
+            {% endif %}
+        </div>
+        <form action="/login-admin" method="post">
+            <div class="mb-3">
+                <label for="username" class="form-label">Tên đăng nhập</label>
+                <input type="text" class="form-control" id="username" name="username" required
+                       value="{{ request.form.username }}">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Mật khẩu</label>
+                <input type="password" class="form-control" id="password" name="password" required
+                       value="{{ request.form.password }}">
+            </div>
+            <!--            <div class="mb-3">-->
+            <!--                <label for="roles" class="form-label">Đăng nhập với quyền</label>-->
+            <!--                <select id="roles" class="form-select" name="role">-->
+            <!--                    {% for r in roles %}-->
+            <!--                    <option value="{{ r.value }}" {% if request.form.role== r.value|string %} selected {% endif %}>-->
+            <!--                        {% if r.value == 3 %}-->
+            <!--                        Quản trị viên-->
+            <!--                        {% endif %}-->
+            <!--                    </option>-->
+            <!--                    {% endfor %}-->
+            <!--                </select>-->
+            <!--            </div>-->
+            <div class="text-center">
+                <button type="submit" class="btn btn-dark my-2 text-center px-5 py-2">Đăng nhập</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</body>
+</html>
+{% endif %}
+
+{% endblock %}

@@ -1,10 +1,10 @@
-from sqlalchemy import func, and_, desc, text
+from sqlalchemy import func, and_, desc, text, case
 from sqlalchemy.orm import aliased
 
-from manageapp.models import User, UserRole, Student, Sex, Studying, Subject, SchoolYear, \
+from StudentManagement.manageapp.models import User, UserRole, Student, Sex, Studying, Subject, SchoolYear, \
     ScoreType, MyClass, Outline, Score, Semester, MyClassDetail, Teaching, RuleDetail, Rule
 import hashlib
-from manageapp import db, app
+from StudentManagement.manageapp import db, app
 
 
 def get_user_by_id(id):
@@ -18,12 +18,18 @@ def auth_user(username, password, role):
                              User.user_role.__eq__(UserRole(int(role)))).first()
 
 
+def auth_admin(username, password):
+    password = str(hashlib.md5(password.strip().encode('utf-8')).hexdigest())
+    return User.query.filter(User.username.__eq__(username.strip()),
+                             User.password.__eq__(password)).first()
+
+
 # yc1
 
 
 def get_rule_by_name(name):
-    r = db.session.query(RuleDetail.value)\
-        .join(Rule, Rule.rule_detail_id == RuleDetail.id)\
+    r = db.session.query(RuleDetail.value) \
+        .join(Rule, Rule.rule_detail_id == RuleDetail.id) \
         .filter(RuleDetail.name.__eq__(name)).first()
     return r
 
@@ -85,8 +91,8 @@ def load_classes_detail():
 
 
 def load_years():
-    years = SchoolYear.query.all()
-    return years
+    year = SchoolYear.query.all()
+    return year
 
 
 def load_students(m_class_detail_id=None, name=None):
@@ -166,11 +172,17 @@ def add_outline(sj_id, cl_id, score_type_id, quantity):
     return o
 
 
+def load_subject():
+    return Subject.query.all()
+
+
 def load_subjects_of_grade(c_name):
     grade = c_name[:2]
     subjects = Subject.query.filter(Subject.grade.contains(grade)).all()
     return subjects
 
+def load_subject_by_grade(grade):
+    return Subject.query.filter(Subject.grade.contains(grade)).all()
 
 def load_students_of_user(cl_id):
     students = db.session.query(Studying.id, Student.first_name, Student.last_name) \
@@ -241,7 +253,6 @@ def get_outline(sj_id, cl_id, sc_type_id):
     return o
 
 
-
 def load_scores_of_class(s_id, cl_id, se_value):
     # Tạo câu truy vấn SQL sử dụng tham số :school_year_id
     query = text("""
@@ -293,7 +304,6 @@ def load_scores_of_class(s_id, cl_id, se_value):
         scores_results.append(row)
     print(scores_results)
     return scores_results
-
 
 
 def get_semester_avg(year=None):
@@ -351,3 +361,79 @@ def get_semester_avg(year=None):
         return semester_avg_results
     else:
         return []
+
+
+
+
+# def stats(subject_id, semester_id, year_id):
+#     subject_stats = db.session.query(
+#         MyClassDetail.name,
+#         func.count(Student.id),
+#         func.sum(case([(Score.value >= 5, 1)], else_=0)),
+#         func.avg(case([(Score.value >= 5, 1)], else_=0))
+#     ).join(MyClass, MyClass.my_class_detail_id == MyClassDetail.id) \
+#         .join(Studying, MyClass.id == Studying.my_class_id) \
+#         .join(Student, Student.id == Studying.student_id) \
+#         .join(Score, Score.studying_id == Studying.id) \
+#         .filter(Score.subject_id == subject_id, Score.semester == semester_id, MyClass.school_year_id == year_id) \
+#         .group_by(MyClassDetail.name).all()
+#     return subject_stats
+
+
+def calculate_class_statistics(subject_id, semester_name, year_id):
+    # Lấy thông tin các lớp học
+    class_infos = (db.session.query(MyClass)
+                   .join(MyClassDetail)
+                   .join(SchoolYear)
+                   .join(Studying).filter(
+        MyClass.school_year_id == year_id,
+        Studying.id == Score.studying_id,
+        Score.subject_id == Subject.id
+    ).all())
+
+    if class_infos:
+        result = []
+        for class_info in class_infos:
+            # Lấy điểm trung bình của từng học sinh trong lớp
+            avg_scores_query = db.session.query(Studying.student_id, func.avg(Score.value).label("average_score")).join(
+                Score).filter(
+                Studying.my_class_id == class_info.id,
+                Score.semester == semester_name
+            ).group_by(Studying.student_id).subquery()
+
+            # Đếm số lượng học sinh có điểm trung bình >= 5
+            num_passing_students = db.session.query(func.count()).filter(
+                avg_scores_query.c.average_score >= 5
+            ).scalar()
+
+            # Tính tỷ lệ
+            total_students = (db.session.query(func.count(Studying.id))
+                              .filter_by(my_class_id=class_info.id).scalar())
+            if total_students:
+                pass_rate = num_passing_students / total_students * 100
+            else:
+                pass_rate = 0
+
+            result.append((
+                class_info.my_class_detail.name,
+                total_students,
+                num_passing_students,
+                pass_rate
+            ))
+
+        return result
+    else:
+        return None
+
+def get_value_by_name(name):
+    result = db.session.query(RuleDetail.value).filter(RuleDetail.name==name).first()
+    return result
+
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        # results = calculate_class_statistics(1, 'S1', 3)
+        # print(results)
+        # print(load_subject_by_grade('G11'))
+        print(get_value_by_name('maxNumber'))

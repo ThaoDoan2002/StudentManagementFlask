@@ -1,0 +1,111 @@
+{% extends 'admin/master.html' %}
+
+{% block body %}
+<div class="col-md-12 col-sm-12">
+    <h2 class="text-center text-info">BÁO CÁO TỔNG KẾT MÔN HỌC</h2>
+    <div>
+        <form class="form-inline d-flex justify-content-between" method="get">
+            <div class="row mt-10 mb-10">
+                <label>Chọn khối </label>
+                <select class="form-select" name="grade_id" id="grade_id" onchange="getGrade()">
+                    <option value="G10">10</option>
+                    <option value="G11">11</option>
+                    <option value="G12">12</option>
+                </select>
+            </div>
+            <div class="row">
+                <label>Môn học: </label>
+                <select class="form-select" name="subject_id" id="subject_id">
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if request.args.subject_id== s.id|string %} selected {% endif %}
+                    >{{ s.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row">
+                <label>Năm học: </label>
+                <select class="form-select" name="year_id" id="year_id">
+                    {% for s in years %}
+                    <option value="{{ s.id }}" {% if request.args.year_id== s.id|string %} selected {% endif %}
+                    >{{ s.year }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="row">
+                <label>Học kỳ: </label>
+                <select class="form-select" name="semester_id" id="semester_id">
+                    <option value="S1">HK1</option>
+                    <option value="S2">HK2</option>
+                </select>
+            </div>
+
+            <div>
+                <input type="submit" value="Thống kê" class="btn btn-info"/>
+            </div>
+        </form>
+    </div>
+    <div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>STT</th>
+                <th>Lớp</th>
+                <th>Sĩ số</th>
+                <th>Số lượng đạt</th>
+                <th>Tỷ lệ</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for s in stat %}
+            <tr>
+                <th>{{ loop.index }}</th>
+                <th>{{ s[0] }}</th>
+                <th>{{ s[1] }}</th>
+                <th>{{ s[2] }}</th>
+                <th>{{ s[3] }} %</th>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<div class="col-md-12 col-sm-12">
+    <canvas id="subjectStats"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/my-chart.js') }}"></script>
+<script>
+    let labels = []
+    let data = []
+    {% for s in stat %}
+    labels.push('{{s[0]}}')
+    data.push('{{s[3]}}')
+    {% endfor %}
+    window.onload = function(){
+        drawCateChart(labels,data)
+    }
+</script>
+<script>
+    function getGrade() {
+        var gradeValue = document.getElementById("grade_id").value;
+        fetch(`/api/load-subjects?grade_id=${gradeValue}`)
+            .then(response => response.json())
+            .then(subjects => {
+                var selectElement = document.getElementById("subject_id");
+                selectElement.innerHTML = '';
+                subjects.forEach(subject => {
+                    var option = document.createElement("option");
+                    option.text = subject.name;
+                    option.value = subject.id;
+                    selectElement.add(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+{% endblock %}

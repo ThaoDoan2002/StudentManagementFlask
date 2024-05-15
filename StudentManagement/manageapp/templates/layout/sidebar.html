@@ -51,7 +51,7 @@
                 {% endfor %}
             </ul>
         </li>
-         <li class="sidebar-item">
+        <li class="sidebar-item">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                data-bs-target="#getScore" aria-expanded="false" aria-controls="auth">
                 <i class="fa-regular fa-star"></i>
@@ -67,11 +67,26 @@
         </li>
         <li class="sidebar-item">
             <a href="/average_scores" class="sidebar-link">
-               <i class="fa-regular fa-moon"></i>
+                <i class="fa-regular fa-moon"></i>
                 <span>Xem điểm tổng kết</span>
             </a>
         </li>
         {% endif %}
+        {% if current_user.is_authenticated and current_user.user_role == roles.ADMIN %}
+        <li class="sidebar-item mb-1">
+            <a href="#" class="sidebar-link">
+                <i class="fa-solid fa-plus"></i>
+                <span>Thống kê</span>
+            </a>
+        </li>
+        <li class="sidebar-item mb-1">
+            <a href="#" class="sidebar-link">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Thay đổi quy định</span>
+            </a>
+        </li>
+        {% endif %}
+
     </ul>
     {% if current_user.is_authenticated %}
     <div class="sidebar-footer">
