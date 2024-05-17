@@ -142,12 +142,9 @@ class Outline(db.Model):
 class Rule(db.Model):
     id = Column(Integer, autoincrement=True, primary_key=True)
     name = Column(String(50), nullable=False)
-
-class RuleDetail(db.Model):
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    name = Column(String(50), nullable=False)
     value = Column(Integer, nullable=False)
-    rule_id=Column(Integer,ForeignKey(Rule.id),nullable=False)
+
+
 
 
 

@@ -1,7 +1,7 @@
 from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask import Flask, request, redirect, url_for
 from StudentManagement.manageapp import db, dao, app
-from StudentManagement.manageapp.models import UserRole,Subject, RuleDetail
+from StudentManagement.manageapp.models import UserRole,Subject, Rule
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, logout_user
 
@@ -58,5 +58,5 @@ class LogoutView(BaseView):
 admin = Admin(app=app, name='Quản trị', template_mode='bootstrap4', index_view=MyIndexView())
 admin.add_view(StatsView(name='Thống kê'))
 admin.add_view(ManageSubject(Subject, db.session, name='Quản lý môn học'))
-admin.add_view(ChangeRule(RuleDetail,db.session, name='Thay đổi quy định'))
+admin.add_view(ChangeRule(Rule,db.session, name='Thay đổi quy định'))
 admin.add_view(LogoutView(name='Đăng xuất'))
