@@ -4,12 +4,12 @@
 
 <div class="main scores">
     <div class=" container mx-5 p-5">
-        <h1 class="text-center">TRA CỨU DANH SÁCH LỚP</h1>
+        <h1 class="text-center">TRA CỨU HỌC SINH</h1>
         <form action="/classes" method="get">
             <div class="row">
                 <div class="col-6 mb-3">
-                    <label for="m-class" class="form-label">Chon lớp</label>
                     <select id="m-class" class="form-select" name="m_class">
+                        <option value=""> Chọn lớp</option>
                         {% for c in classes %}
                         <option value="{{ c.id }}" {% if request.args.m_class== c.id|string %} selected {% endif %}>{{
                             c.name }}
@@ -18,14 +18,9 @@
                     </select>
                 </div>
                 <div class="col-6 mb-3">
-                    <label for="year" class="form-label">Chon năm</label>
-                    <select id="year" class="form-select" name="year">
-                        {% for y in years %}
-                        <option value="{{ y.id }}" {% if request.args.year== y.id|string %} selected {% endif %}>{{
-                            y.year }}
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <input type="text" class="form-control" placeholder="Nhập họ hoặc tên...."
+                           aria-label="Recipient's username" aria-describedby="basic-addon2" name="name"
+                           value="{{request.args.name}}">
                 </div>
             </div>
             <div class="text-center">
@@ -33,10 +28,14 @@
                         class="fa-solid fa-magnifying-glass"></i></button>
             </div>
         </form>
+        {% if request.args.get('m_class') == '' or request.args.get('m_class') is none %}
+        <div class="alert alert-info mt-3">Vui lòng chọn thông tin lớp học sinh</div>
+        {% else %}
         {% if students|length > 0 %}
         <div class="table-responsive">
             <table class="table table-bordered mt-3 bg-light n-table">
                 <thead>
+                {% if request.args.name is none or request.args.name == '' %}
                 <tr>
                     <th class="text-center" colspan="{% if request.args.year == '3' %} 6 {% else %} 5 {% endif %}">DANH
                         SÁCH LỚP
@@ -50,6 +49,7 @@
                         }}
                     </th>
                 </tr>
+                {% endif %}
                 <tr class="text-center">
                     <th scope="col">STT</th>
                     <th scope="col">Họ tên</th>
@@ -69,19 +69,21 @@
                     <td>{{ students[i].sex.name }}</td>
                     <td>{{ students[i].dob }}</td>
                     <td>{{ students[i].address }}</td>
-                    {% if request.args.year == '3' %}
                     <td class="text-center">
                         <a href="/students/change_class/{{ students[i].id }}/{{ class_detail.id }}"
                            class="btn btn-warning mb-1 mx-1"><i
                                 class="fa-solid fa-pen-to-square"></i></a>
                     </td>
-                    {% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="alert alert-danger mt-3">Không tìm thấy học sinh</div>
         {% endif %}
+        {% endif %}
+
 
     </div>
 </div>

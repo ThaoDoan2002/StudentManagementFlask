@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% block title %}Employee - Students{% endblock %}
 {% block content %}
 <div class="main add_student">
     <div class="main container mx-5 p-5">
@@ -62,10 +63,10 @@
                 <input type="text" class="form-control" name="phone" placeholder="Nhập số điện thoại..." required
                        value="{{ request.form.phone }}">
             </div>
-            <div class="mb-3">
-                <label class="form-label">Email</label>
+            <div class="mb-3 input-group">
                 <input type="email" class="form-control" name="email" placeholder="Nhập email..." required
-                       value="{{ request.form.email }}">
+                       value="{{ request.form.email }}" aria-describedby="basic-addon2">
+                <span class="input-group-text" id="basic-addon2">@gmail.com</span>
             </div>
             <button type="submit" class="btn btn-dark">Thêm</button>
         </form>

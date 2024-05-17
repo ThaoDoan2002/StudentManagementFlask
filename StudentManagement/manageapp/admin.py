@@ -1,7 +1,7 @@
 from flask_admin import Admin, BaseView, expose, AdminIndexView
 from flask import Flask, request, redirect, url_for
-from StudentManagement.manageapp import db, dao, app
-from StudentManagement.manageapp.models import UserRole,Subject, Rule
+from manageapp import db, dao, app
+from manageapp.models import UserRole,Subject, Rule
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user, logout_user
 
