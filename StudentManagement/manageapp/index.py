@@ -1,11 +1,10 @@
 from datetime import datetime
-from StudentManagement.manageapp import admin
 from flask import render_template, request, redirect, url_for, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
-from StudentManagement.manageapp import app, login, dao, db
-from StudentManagement.manageapp.decorators import loggedin
-from StudentManagement.manageapp.models import UserRole, Sex, Student, Studying, Semester, SchoolYear, MyClass, Score, \
-    Outline, Rule
+from manageapp import app, login, dao, db
+from manageapp.decorators import loggedin, teacherlogined, employeelogined
+from manageapp.models import UserRole, Sex, Student, Studying, Semester, SchoolYear, MyClass, Score, \
+    Outline
 
 
 @app.context_processor
@@ -24,8 +23,6 @@ def roles_context_processor():
 @app.route('/')
 @login_required
 def index():
-    r = 20
-    print(r)
     return render_template('index.html')
 
 
@@ -64,29 +61,26 @@ def admin_login():
             return redirect('/admin')
         else:
             err_msg = 'Tên đăng nhập hoặc mật khẩu hoặc quyền truy cập sai!'
-    return render_template('admin/index.html',err_msg=err_msg)
-
-
-
-
+    return render_template('admin/index.html', err_msg=err_msg)
 
 
 @app.route('/logout', methods=['get'])
 @login_required
 def logout():
     logout_user()
-    return redirect('/')
+    return redirect('/login')
 
 
 # yc1
 @app.route('/students/add_student', methods=['get', 'post'])
 @login_required
+@teacherlogined
 def add_student():
     err_msg1 = ''
     err_msg2 = ''
     err_msg3 = ''
-    min_age = dao.get_value_by_name('minAge')
-    max_age = dao.get_value_by_name('maxAge')
+    min_age = dao.get_rule_value('minAge')
+    max_age = dao.get_rule_value('maxAge')
     f1 = True
     f2 = True
     f3 = True
@@ -99,8 +93,8 @@ def add_student():
         phone = request.form.get('phone')
         email = request.form.get('email')
 
-        if min_age > (datetime.now().year - datetime.strptime(dob, "%Y-%m-%d").year) or (
-                datetime.now().year - datetime.strptime(dob, "%Y-%m-%d").year) > max_age:
+        if min_age.value > (datetime.now().year - datetime.strptime(dob, "%Y-%m-%d").year) or (
+                datetime.now().year - datetime.strptime(dob, "%Y-%m-%d").year) > max_age.value:
             err_msg1 = 'Chỉ nhận học sinh có độ tuổi 15 - 20 tuổi!'
             f1 = False
         if dao.is_email_duplicate(email):
@@ -128,6 +122,7 @@ def new_students():
 
 
 @app.route('/students/<int:id>')
+@login_required
 def student_detail(id):
     student = dao.get_student_by_id(id)
     return render_template('employee/student-detail.html', student=student)
@@ -135,8 +130,10 @@ def student_detail(id):
 
 # yc2.1
 @app.route('/arrange_class', methods=['GET'])
+@login_required
+@teacherlogined
 def arrange_class():
-    number_max = dao.get_value_by_name('maxNumber')  # rule
+    number_max = dao.get_rule_value('maxNumber')  # rule
 
     new_students = dao.load_new_student()
     classes = dao.load_classes_g10()
@@ -147,7 +144,7 @@ def arrange_class():
     for s in new_students:
         assigned = False  # học sinh chưa được xếp lớp
         for c in classes:
-            if class_student_counts[c.id] < number_max:
+            if class_student_counts[c.id] < number_max.value:
                 studying = Studying(student_id=s.id, my_class_id=c.id)
                 db.session.add(studying)
                 # Cập nhật số lượng học sinh trong lớp
@@ -176,10 +173,7 @@ def info_classes():
     m_class_detail_id = request.args.get('m_class')
     name = request.args.get('name')
 
-
     class_detail = dao.get_class_detail_by_id(m_class_detail_id)
-
-
 
     students = dao.load_students(m_class_detail_id, name)
 
@@ -189,26 +183,24 @@ def info_classes():
 
 # yc2.2
 @app.route('/students/change_class/<int:st_id>/<int:cl_dt_id>', methods=['get', 'post'])
+@login_required
+@teacherlogined
 def change_class(st_id, cl_dt_id):
     student = Student.query.get(st_id)
 
     name_class_now = dao.get_class_detail_by_id(cl_dt_id).name
     my_class = dao.get_my_class_by_dt_cl(cl_dt_id)
 
-    max_number = dao.get_value_by_name('maxNumber')
+    max_number = dao.get_rule_value('maxNumber')
 
     err_msg = ''
-    classrooms = dao.load_class_for_update(cl_dt_id, max_number,
+    classrooms = dao.load_class_for_update(cl_dt_id, max_number.value,
                                            name_class_now)  # lấy ra các class khác cl_id và phải có số lượng học sinh còn dư theo yêu cầu, và khối nào chuyển theo khối đó
     if request.method.__eq__('POST'):
         n_class_id = request.form.get('n-class')
         if n_class_id and n_class_id != '0':
             # Tìm đối tượng studying cần cập nhật
             studying = Studying.query.filter(Studying.student_id == st_id, Studying.my_class_id == my_class.id).first()
-            print(studying)
-            # studying = db.session.query(Studying).filter_by(student_id=st_id,
-            #                                                 my_class_id=n_class).first()
-            # Kiểm tra xem student_classroom có tồn tại hay không
             if studying:
                 studying.my_class_id = n_class_id
                 db.session.commit()
@@ -225,6 +217,8 @@ def change_class(st_id, cl_dt_id):
 # yc3.1
 
 @app.route('/scores/<int:sj_id>', methods=['get', 'post'])
+@login_required
+@employeelogined
 def input_scores(sj_id):
     m_class = dao.get_my_class_of_user(current_user.id)
     subject = dao.get_subject_by_id(sj_id)
@@ -233,10 +227,11 @@ def input_scores(sj_id):
     semesters = dao.load_semester(sj_id, m_class.id)
     type_15m = dao.get_outline(sj_id, m_class.id, 1)
     type_1h = dao.get_outline(sj_id, m_class.id, 2)
+
     if request.method.__eq__('POST'):
         data = request.form  # Lấy dữ liệu từ biểu mẫu HTML
         if data.get('type_1') and data.get('type_2'):
-            q_15m = int(data['type_1'])
+            q_15m = int(data['type_1']) #lay sl diem 15p do nguoi dung nhap
             q_1h = int(data['type_2'])
             o1 = Outline(subject_id=sj_id, my_class_id=m_class.id, score_type_id=1, number_score=q_15m)
             o2 = Outline(subject_id=sj_id, my_class_id=m_class.id, score_type_id=2, number_score=q_1h)
@@ -262,6 +257,7 @@ def input_scores(sj_id):
 
 
 @app.route('/get_scores/<int:sj_id>', methods=['get'])
+@login_required
 def scores_of_class_by_subject(sj_id):
     err_msg = ''
     err_msg2 = ''
@@ -278,25 +274,46 @@ def scores_of_class_by_subject(sj_id):
         if len(student_scores) < 1:
             err_msg2 = "Chưa nhập điểm!"
 
-    type_15m = dao.load_number_score_by_type(subject.id, 1)
-    type_1h = dao.load_number_score_by_type(subject.id, 2)
-    print(type_15m)
-    print(type_1h)
+    type_15m = dao.load_number_score_by_type(subject.id, 1, m_class.id)
+    type_1h = dao.load_number_score_by_type(subject.id, 2, m_class.id)
     return render_template('teacher/scores.html', student_scores=student_scores, subject=subject,
                            m_class=m_class, type_15m=type_15m, type_1h=type_1h, semesters=Semester, err_msg=err_msg,
                            err_msg2=err_msg2)
 
 
+@app.route("/api/classes", methods=['get'])
+def api_classes():
+    year = request.args.get('year')
+    classes = dao.load_classes_for_api(year)
+    classes_dict = [{'id': c.id, 'name': c.name} for c in classes]
+    return jsonify(classes_dict)
+
+
+
+
 @app.route('/average_scores')
+@login_required
 def average_scores():
     years = SchoolYear.query.all()
     err_msg = ''
+    err_msg2 = ''
+    classes = []
     year = request.args.get('year')
-    if year is None:
+    m_class = request.args.get('m_class')
+
+
+    if year is None or year == '':
         err_msg = 'Hãy chọn năm học!'
 
-    averages = dao.get_semester_avg(year)
-    return render_template('teacher/average-scores.html', averages=averages, years=years, err_msg=err_msg)
+    if m_class is None or m_class == '':
+        err_msg2 = 'Hãy chọn lớp học!'
+
+    if year:
+        classes = dao.load_classes_for_api(year)
+
+
+    averages = dao.get_semester_avg(year, m_class)
+    return render_template('teacher/average-scores.html', averages=averages, years=years, err_msg=err_msg, err_msg2=err_msg2,classes =classes)
 
 
 @app.route('/api/load-subjects', methods=['GET'])

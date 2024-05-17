@@ -1,5 +1,8 @@
+from datetime import datetime, timedelta
+
+from faker import Faker
 from sqlalchemy import Column, String, Integer, Enum, ForeignKey, UniqueConstraint, Float, DATE
-from StudentManagement.manageapp import db, app
+from manageapp import db, app
 from flask_login import UserMixin
 from enum import Enum as MyEnum
 from sqlalchemy.orm import relationship
@@ -36,8 +39,7 @@ class User(db.Model, UserMixin):
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(50), nullable=False)
     user_role = Column(Enum(UserRole), nullable=False)
-    # my_class = relationship('MyClass', backref='user', uselist=False, lazy=True)
-    teachings = relationship('Teaching', backref='user', lazy=True)
+    my_classes = relationship('MyClass', backref='user', lazy=True)
 
 
 class Student(db.Model):
@@ -64,24 +66,15 @@ class MyClass(db.Model):
     id = Column(Integer, autoincrement=True, primary_key=True)
     my_class_detail_id = Column(Integer, ForeignKey(MyClassDetail.id), nullable=False)
     school_year_id = Column(Integer, ForeignKey('school_year.id'), nullable=False)
-    teachings = relationship('Teaching', backref='my_class', lazy=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
     studyings = relationship('Studying', backref='my_class', lazy=True)
     outlines = relationship('Outline', backref='my_class', lazy=True)
 
     __table_args__ = (
         UniqueConstraint('my_class_detail_id', 'school_year_id', name='uq_class_year'),
+        UniqueConstraint('user_id', 'school_year_id', name='uq_user_year') #giao vien co the chu nhiem nhieu lop nhung 1 nam chi chu nhiem 1 lop
     )
 
-
-class Teaching(db.Model):
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    my_class_id = Column(Integer, ForeignKey(MyClass.id), nullable=False)
-
-
-    __table_args__ = (
-        UniqueConstraint('user_id', 'my_class_id', name='uq_teacher_class'),
-    )
 
 
 class Studying(db.Model):
@@ -142,56 +135,15 @@ class Outline(db.Model):
 class Rule(db.Model):
     id = Column(Integer, autoincrement=True, primary_key=True)
     name = Column(String(50), nullable=False)
-
-class RuleDetail(db.Model):
-    id = Column(Integer, autoincrement=True, primary_key=True)
-    name = Column(String(50), nullable=False)
     value = Column(Integer, nullable=False)
-    rule_id=Column(Integer,ForeignKey(Rule.id),nullable=False)
-
-
-
-# class Teacher(db.Model):
-#     id = Column(Integer, autoincrement=True, primary_key=True)
-#     user_id = Column(Integer, ForeignKey(User.id), unique=True)
-#     # classroom = relationship('Classroom', backref='teacher', uselist=False)
-#     teacher_classrooms = relationship('TeacherClassroom', backref='teacher', lazy=True)
-
-
-# class TeacherClassroom(db.Model):
-#     id = Column(Integer, autoincrement=True, primary_key=True)
-#     classroom_id = Column(Integer, ForeignKey('classroom.id'))
-#     teacher_id = Column(Integer, ForeignKey(Teacher.id))
-#     school_year_id = Column(Integer, ForeignKey(SchoolYear.id))
-#     studyings = relationship('Studying', backref='teacher_classroom', lazy=True)
 #
-#     __table_args__ = (
-#         UniqueConstraint('classroom_id', 'school_year_id', name='class_year'),
-#         # 1 lớp trong cùng 1 niên khóa không cho nhều giáo viên chủ nhiệm
-#         UniqueConstraint('teacher_id', 'school_year_id', name='teacher_year'),
-#         # 1 giáo viên không thể chủ nhiệm nhiều lớp trong 1 niên khóa
-#     )
 
 
-# Thêm các dữ liệu vào cơ sở dữ liệu
-# for data in students_data:
-#     student = Student(**data)
-#     db.session.add(student)
-#
-# db.session.commit()
-#             r1 = Regulation(name='max_age', value=20)
-#             r2 = Regulation(name='min_age', value=15)
-#             r3 = Regulation(name='max_class_size', value=40)
-#
-#             db.session.add_all([r1, r2,r3])
-#             db.session.commit()
-# student = db.session.get(Student, 15)
-# if student:
-#     db.session.delete(student)
-#     db.session.commit()
+
+
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        # db.create_all()
 
         # students = db.session.query(Studying.id.label('studying_id'), Student.id, Student.first_name, Student.last_name) \
         #     .join(Studying, Studying.student_id == Student.id) \
@@ -253,13 +205,9 @@ if __name__ == '__main__':
         # db.session.add(student)
         # db.session.commit()
         #
-        import hashlib
-
-        # u = User(first_name='Taylor',
-        #           last_name='Swift',
-        #           username='employee1',
-        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
-        #           user_role = UserRole.EMPLOYEE)
+        # import hashlib
+        #
+        #
         #
         # u1 = User(first_name='Hong',
         #          last_name='Hae In',
@@ -277,13 +225,63 @@ if __name__ == '__main__':
         #           username='teacher3',
         #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
         #           user_role=UserRole.TEACHER)
-        # u4 = User(first_name='Nguyen',
+        # u4 = User(first_name='Nhi',
+        #           last_name='Nhi',
+        #           username='teacher4',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.TEACHER)
+        # u5 = User(first_name='Minh',
+        #           last_name='Anh',
+        #           username='teacher5',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.TEACHER)
+        # u6 = User(first_name='Gia',
+        #           last_name='An',
+        #           username='teacher6',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.TEACHER)
+        #
+        # u7 = User(first_name='Ngoc',
+        #           last_name='Lan',
+        #           username='teacher7',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.TEACHER)
+        #
+        # u8 = User(first_name='Phi',
+        #           last_name='Nhung',
+        #           username='teacher8',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.TEACHER)
+        #
+        # u9 = User(first_name='My',
+        #           last_name='Linh',
+        #           username='teacher9',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.TEACHER)
+        #
+        # u10 = User(first_name='Nguyen',
+        #           last_name='Van Anh',
+        #           username='admin',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role = UserRole.ADMIN)
+        # u11 = User(first_name='Nguyen',
+        #           last_name='Thi Van',
+        #           username='employee1',
+        #           password=str(hashlib.md5('123456'.encode('utf-8')).hexdigest()),
+        #           user_role=UserRole.EMPLOYEE)
+        # u12 = User(first_name='Nguyen',
         #           last_name='Ngan',
         #           username='nn83',
         #           password=str(hashlib.md5('123'.encode('utf-8')).hexdigest()),
         #           user_role=UserRole.ADMIN)
         #
-        # db.session.add_all([u4])
+        # db.session.add_all([u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12])
+        # db.session.commit()
+        # import hashlib
+        #
+
+
+        # db.session.add_all([u7,u8,u9])
         # db.session.commit()
         # mclass = MyClass.query.get(1)
         # print(mclass.my_class_detail.name)
@@ -297,38 +295,38 @@ if __name__ == '__main__':
         #     .having(func.count(Studying.student_id) < 5) \
         #     .all()
         # print(classrooms)
-        #
-        # fake = Faker('vi_VN')
-        # # Tạo 1000 đối tượng Student giả lập
-        #
-        # # Tạo set để lưu trữ các email và số điện thoại đã được tạo
-        # unique_emails = set()
-        # unique_phones = set()
-        #
-        # # Tính toán ngày sinh cho đối tượng Student trong khoảng từ 15 đến 20 tuổi
-        # start_date = datetime.now() - timedelta(days=20 * 365)
-        # end_date = datetime.now() - timedelta(days=15 * 365)
-        #
-        # # Tạo 1000 đối tượng Student giả lập
-        # while len(unique_emails) < 9:
-        #     first_name = fake.first_name()
-        #     last_name = fake.last_name()
-        #     dob = fake.date_of_birth(minimum_age=15, maximum_age=20)
-        #     address = fake.address()
-        #     sex = fake.random_element(elements=(Sex.FEMALE, Sex.MALE, Sex.ANOTHER))
-        #
-        #     phone = fake.phone_number()
-        #     email = fake.email()
-        #
-        #     # Kiểm tra tính duy nhất của email và số điện thoại
-        #     if email not in unique_emails and phone not in unique_phones:
-        #         unique_emails.add(email)
-        #         unique_phones.add(phone)
-        #
-        #         # Tạo đối tượng Student và thêm vào session
-        #         student = Student(first_name=first_name, last_name=last_name, dob=dob,
-        #                           address=address, sex=sex, phone=phone, email=email)
-        #         db.session.add(student)
-        #
-        # # Commit các thay đổi vào cơ sở dữ liệu
-        # db.session.commit()
+
+        fake = Faker('vi_VN')
+        # Tạo 1000 đối tượng Student giả lập
+
+        # Tạo set để lưu trữ các email và số điện thoại đã được tạo
+        unique_emails = set()
+        unique_phones = set()
+
+        # Tính toán ngày sinh cho đối tượng Student trong khoảng từ 15 đến 20 tuổi
+        start_date = datetime.now() - timedelta(days=20 * 365)
+        end_date = datetime.now() - timedelta(days=15 * 365)
+
+        # Tạo 1000 đối tượng Student giả lập
+        while len(unique_emails) < 45: #12+15+9+9
+            first_name = fake.first_name()
+            last_name = fake.last_name()
+            dob = fake.date_of_birth(minimum_age=15, maximum_age=20)
+            address = fake.address()
+            sex = fake.random_element(elements=(Sex.FEMALE, Sex.MALE, Sex.ANOTHER))
+
+            phone = fake.phone_number()
+            email = fake.email()
+
+            # Kiểm tra tính duy nhất của email và số điện thoại
+            if email not in unique_emails and phone not in unique_phones:
+                unique_emails.add(email)
+                unique_phones.add(phone)
+
+                # Tạo đối tượng Student và thêm vào session
+                student = Student(first_name=first_name, last_name=last_name, dob=dob,
+                                  address=address, sex=sex, phone=phone, email=email)
+                db.session.add(student)
+
+        # Commit các thay đổi vào cơ sở dữ liệu
+        db.session.commit()
