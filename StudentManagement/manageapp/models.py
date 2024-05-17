@@ -136,7 +136,7 @@ class Rule(db.Model):
     id = Column(Integer, autoincrement=True, primary_key=True)
     name = Column(String(50), nullable=False)
     value = Column(Integer, nullable=False)
-#
+
 
 
 

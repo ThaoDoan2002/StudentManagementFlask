@@ -1,6 +1,7 @@
 from sqlalchemy import func, and_, desc, text, case
 from sqlalchemy.orm import aliased
 
+
 from manageapp.models import User, UserRole, Student, Sex, Studying, Subject, SchoolYear, \
     ScoreType, MyClass, Outline, Score, Semester, MyClassDetail,  Rule
 import hashlib
@@ -417,6 +418,10 @@ def calculate_class_statistics(subject_id, semester_name, year_id):
         return None
 
 
+def get_value_by_name(name):
+    result = db.session.query(Rule.value).filter(Rule.name==name).first()
+    return int(result[0])
+
 def get_rule_value(name):
     result = db.session.query(Rule.value).filter(Rule.name == name).first()
     return result
@@ -427,4 +432,4 @@ if __name__ == '__main__':
         # results = calculate_class_statistics(1, 'S1', 3)
         # print(results)
         # print(load_subject_by_grade('G11'))
-        print(get_rule_value('maxNumber'))
+
