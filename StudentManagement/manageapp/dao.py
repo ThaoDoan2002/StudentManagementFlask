@@ -1,10 +1,10 @@
 from sqlalchemy import func, and_, desc, text, case
 from sqlalchemy.orm import aliased
 
-from StudentManagement.manageapp.models import User, UserRole, Student, Sex, Studying, Subject, SchoolYear, \
-    ScoreType, MyClass, Outline, Score, Semester, MyClassDetail, Teaching, RuleDetail, Rule
+from manageapp.models import User, UserRole, Student, Sex, Studying, Subject, SchoolYear, \
+    ScoreType, MyClass, Outline, Score, Semester, MyClassDetail,  Rule
 import hashlib
-from StudentManagement.manageapp import db, app
+from manageapp import db, app
 
 
 def get_user_by_id(id):
@@ -25,14 +25,6 @@ def auth_admin(username, password):
 
 
 # yc1
-
-
-def get_rule_by_name(name):
-    r = db.session.query(RuleDetail.value) \
-        .join(Rule, Rule.rule_detail_id == RuleDetail.id) \
-        .filter(RuleDetail.name.__eq__(name)).first()
-    return r
-
 
 def add_student(fn, ln, dob, sex, address, phone, email):
     s = Student(first_name=fn,
@@ -95,13 +87,19 @@ def load_years():
     return year
 
 
-def load_students(m_class_detail_id, year_id):
-    students = db.session.query(Student.id, Student.first_name, Student.last_name, Student.sex, Student.dob,
-                                Student.address) \
+def load_students(m_class_detail_id=None, name=None):
+    query = db.session.query(Student.id, Student.first_name, Student.last_name, Student.sex, Student.dob,
+                             Student.address) \
         .join(Studying, Studying.student_id == Student.id) \
         .join(MyClass, Studying.my_class_id == MyClass.id) \
-        .filter(MyClass.school_year_id == year_id, MyClass.my_class_detail_id == m_class_detail_id) \
-        .all()
+        .filter(MyClass.school_year_id == app.config["YEAR"])
+
+    if m_class_detail_id is not None:
+        query = query.filter(MyClass.my_class_detail_id == m_class_detail_id)
+    if name is not None:
+        query = query.filter((Student.first_name.contains(name)) | (Student.last_name.contains(name)))
+
+    students = query.all()
 
     return students
 
@@ -131,12 +129,7 @@ def load_class_for_update(cl_dt_id, max_number, name):
         .group_by(MyClass.id) \
         .having(func.count(Studying.student_id) < max_number) \
         .all()
-    # classrooms = MyClass.query \
-    #     .join(Studying) \
-    #     .filter(MyClass.grade == grade, MyClass.id != id, Studying.school_year_id == year) \
-    #     .group_by(MyClass.id, MyClass.name) \
-    #     .having(func.count(Studying.student_id) < max_number) \
-    #     .all()
+
     return classrooms
 
 
@@ -150,9 +143,8 @@ def get_student_by_id(id):
 def get_my_class_of_user(user_id):
     m_class = db.session.query(MyClass.id, MyClassDetail.name, SchoolYear.year) \
         .join(MyClassDetail, MyClassDetail.id == MyClass.my_class_detail_id) \
-        .join(Teaching, Teaching.my_class_id == MyClass.id) \
         .join(SchoolYear, SchoolYear.id == MyClass.school_year_id) \
-        .filter(Teaching.user_id == user_id, MyClass.school_year_id == app.config["YEAR"]) \
+        .filter(MyClass.user_id == user_id, MyClass.school_year_id == app.config["YEAR"]) \
         .first()
     return m_class
 
@@ -173,8 +165,10 @@ def load_subjects_of_grade(c_name):
     subjects = Subject.query.filter(Subject.grade.contains(grade)).all()
     return subjects
 
+
 def load_subject_by_grade(grade):
     return Subject.query.filter(Subject.grade.contains(grade)).all()
+
 
 def load_students_of_user(cl_id):
     students = db.session.query(Studying.id, Student.first_name, Student.last_name) \
@@ -189,9 +183,9 @@ def load_score_types():
     return ScoreType.query.all()
 
 
-def load_number_score_by_type(sj_id, type_id):
+def load_number_score_by_type(sj_id, type_id, cl_id):
     outline = Outline.query. \
-        filter(Outline.subject_id == sj_id, Outline.score_type_id == type_id) \
+        filter(Outline.subject_id == sj_id, Outline.score_type_id == type_id, Outline.my_class_id == cl_id) \
         .first()
     if outline:
         return outline.number_score
@@ -298,8 +292,16 @@ def load_scores_of_class(s_id, cl_id, se_value):
     return scores_results
 
 
-def get_semester_avg(year=None):
-    # Tạo câu truy vấn SQL sử dụng tham số :school_year_id
+def load_classes_for_api(year):
+    classes = db.session.query(MyClass.id, MyClassDetail.name) \
+        .join(MyClassDetail, MyClassDetail.id == MyClass.my_class_detail_id) \
+        .filter(MyClass.school_year_id == year) \
+        .all()
+    return classes
+
+
+def get_semester_avg(year=None, cl_id=None):
+    # Tạo câu truy vấn SQL sử dụng tham số :school_year_id va my_class_id
     query = text("""
         WITH subTBM AS (
                    SELECT 
@@ -321,7 +323,7 @@ def get_semester_avg(year=None):
             JOIN 
 				my_class_detail cd ON cd.id = c.my_class_detail_id 
             WHERE 
-                c.school_year_id = :school_year_id  -- Sử dụng tham số :school_year_id
+                c.school_year_id = :school_year_id and c.id = :my_class_id  -- Sử dụng tham số :school_year_id
             GROUP BY 
                 sc.studying_id, sc.subject_id, sc.semester
         ),
@@ -341,20 +343,17 @@ def get_semester_avg(year=None):
 
         SELECT * FROM semester_avg;
     """)
-    if year:
+    if year and cl_id:
         # Truyền giá trị tham số vào khi thực thi truy vấn
-        result = db.session.execute(query, {"school_year_id": year})
+        result = db.session.execute(query, {"school_year_id": year, "my_class_id": cl_id})
 
         # Lấy kết quả
         semester_avg_results = []
         for row in result:
             semester_avg_results.append(row)
-
         return semester_avg_results
     else:
         return []
-
-
 
 
 # def stats(subject_id, semester_id, year_id):
@@ -417,10 +416,10 @@ def calculate_class_statistics(subject_id, semester_name, year_id):
     else:
         return None
 
-def get_value_by_name(name):
-    result = db.session.query(RuleDetail.value).filter(RuleDetail.name==name).first()
-    return result
 
+def get_rule_value(name):
+    result = db.session.query(Rule.value).filter(Rule.name == name).first()
+    return result
 
 
 if __name__ == '__main__':
@@ -428,4 +427,4 @@ if __name__ == '__main__':
         # results = calculate_class_statistics(1, 'S1', 3)
         # print(results)
         # print(load_subject_by_grade('G11'))
-        print(get_value_by_name('maxNumber'))
+        print(get_rule_value('maxNumber'))

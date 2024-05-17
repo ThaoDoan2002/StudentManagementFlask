@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% block title %}Teacher - Students{% endblock %}
 {% block content %}
 <div class="main score">
     <div class=" container mx-5 p-5 input_score">
@@ -98,7 +99,4 @@
     </div>
 </div>
 
-{% block js %}
-<script src="{{ url_for('static', filename='js/scores.js') }}"></script>
-{% endblock %}
 {% endblock %}

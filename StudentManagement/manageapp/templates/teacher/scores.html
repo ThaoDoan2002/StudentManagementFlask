@@ -1,5 +1,5 @@
 {% extends 'layout/base.html' %}
-{% block title %}Employee - Students{% endblock %}
+{% block title %}Teacher - Students{% endblock %}
 {% block content %}
 
 <div class="main scores">
@@ -27,7 +27,7 @@
             <div class="col-md-4 col-12"><h4>Năm học: {{ m_class.year }}</h4></div>
         </div>
         {% if err_msg %}
-        <div class="alert alert-danger mt-3">{{ err_msg }}</div>
+        <div class="alert alert-info mt-3">{{ err_msg }}</div>
         {% else %}
         <div class="table-responsive">
             <table class="table table-bordered mt-3 bg-light n-table">
